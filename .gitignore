@@ -1,6 +1,9 @@
 *.mp4
 *.aac
 *.h264
+*.m3u8
+*.png
+*.ts
 .idea
 .vscode
 __debug_bin*
