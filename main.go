@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	hlsdata "rtmp-new/m/v2/hlsData"
 	"rtmp-new/m/v2/hlsServer"
-	"rtmp-new/m/v2/rtmp"
 
+	rtmp "github.com/grnd-alt/rtmpServer"
 	"github.com/yapingcat/gomedia/go-codec"
 )
 
@@ -35,35 +36,16 @@ func (writer *fileWriter) onFrame(codecid int, frame []byte, streamId string) {
 	} else {
 		panic("UNKNOWN CODEC ID")
 	}
-	fmt.Printf("FRAME: %s\n", streamId)
+	// fmt.Printf("FRAME: %s\n", streamId)
 }
 
-type transCoder struct {
-	videoData []byte
-	audioData []byte
-}
-
-func (transcoder *transCoder) onFrame(codecid int, frame []byte, streamId string) {
-	if codecid == int(codec.CODECID_VIDEO_H264) {
-		transcoder.videoData = append(transcoder.videoData, frame...)
-	} else if codecid == int(codec.CODECID_AUDIO_AAC) {
-		transcoder.audioData = append(transcoder.audioData, frame...)
-	} else {
-		panic("UNKNOWN CODEC ID")
-	}
-	fmt.Printf("FRAME: %s\n", streamId)
-}
 func main() {
-	writer := fileWriter{}
-	go rtmp.StartServer("localhost", 1935, writer.onFrame, writer.onPublish)
+	// writer := fileWriter{}
+	transCoder := hlsdata.NewTransCoder()
+	go rtmp.StartServer("localhost", 1935, transCoder.OnFrame, transCoder.OnPublish)
 	HlsServer := hlsServer.InitHlsServer("localhost", 8080)
-	HlsServer.OnGetMasterPlaylist(func(streamId string) string {
-		content, err := os.ReadFile(fmt.Sprintf("./%s/master.m3u8", streamId))
-		if err != nil {
-			panic(err)
-		}
-		return string(content)
-	})
+	HlsServer.OnGetMasterPlaylist(transCoder.GetMasterPlaylist)
+	HlsServer.OnGetPlaylist(transCoder.GetPlaylist)
 
 	HlsServer.OnGetSegment(func(streamID, segment string) string {
 		content, err := os.ReadFile(fmt.Sprintf("./%s/%s", streamID, segment))
@@ -73,4 +55,5 @@ func main() {
 		return string(content)
 	})
 	HlsServer.StartHlsServer()
+	fmt.Println("done lol")
 }
