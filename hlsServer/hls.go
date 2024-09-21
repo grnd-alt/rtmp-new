@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type (
@@ -60,7 +62,7 @@ func (server *HlsServer) handleSegmentRequest(w http.ResponseWriter, req *http.R
 
 func corsMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("request: ", r.RequestURI)
+		log.Warn("Request")
 		w.Header().Set("Access-control-allow-origin", "*")
 		next.ServeHTTP(w, r)
 	})

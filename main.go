@@ -42,8 +42,8 @@ func (writer *fileWriter) onFrame(codecid int, frame []byte, streamId string) {
 func main() {
 	// writer := fileWriter{}
 	transCoder := hlsdata.NewTransCoder()
-	go rtmp.StartServer("localhost", 1935, transCoder.OnFrame, transCoder.OnPublish)
-	HlsServer := hlsServer.InitHlsServer("localhost", 8080)
+	go rtmp.StartServer("0.0.0.0", 1935, transCoder.OnFrame, transCoder.OnPublish)
+	HlsServer := hlsServer.InitHlsServer("0.0.0.0", 8080)
 	HlsServer.OnGetMasterPlaylist(transCoder.GetMasterPlaylist)
 	HlsServer.OnGetPlaylist(transCoder.GetPlaylist)
 
